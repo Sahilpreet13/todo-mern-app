@@ -1,18 +1,22 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import TodoServices from "../Services/TodoServices";
+import { getErrorMessage } from "../Utils/ErrorMessage";
 
 const EditTodo = ({ task, setShowModal, getUserTask }) => {
   const [title, setTitle] = useState(task?.title);
   const [description, setDescription] = useState(task?.description);
   const [isCompleted, setIsCompleted] = useState(task?.isCompleted);
+  const [dueDate, setDueDate] = useState(
+    task?.dueDate ? task.dueDate.split("T")[0] : "",
+  );
 
   const handleClose = () => {
     setShowModal(false);
   };
 
   const handleSelectChange = (e) => {
-    setIsCompleted(e.target.value);
+    setIsCompleted(e.target.value === "true");
   };
   //   console.log(isCompleted);
   const id = task?._id;
@@ -20,87 +24,64 @@ const EditTodo = ({ task, setShowModal, getUserTask }) => {
   //update
   const handleSubmit = async () => {
     try {
-      const userData = JSON.parse(localStorage.getItem("todoapp"));
-      const createdBy = userData && userData.user.id;
-      const data = { title, description, createdBy, isCompleted };
       if (!title || !description) {
-        return toast.error("Please prvide title or description");
+        return toast.error("Please provide title and description");
       }
+
+      const data = { title, description, isCompleted, dueDate };
+
       await TodoServices.updateTodo(id, data);
-      setShowModal(false);
+
       toast.success("Task Updated Successfully");
-      setTitle("");
-      setDescription("");
+      setShowModal(false);
       getUserTask();
     } catch (error) {
       console.log(error);
-      toast.error(error);
+      toast.error(getErrorMessage(error));
     }
   };
   return (
     <>
       {task && (
-        <div
-          className="modal"
-          tabIndex="-1"
-          role="dialog"
-          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
-        >
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Update Your Task</h5>
-                <button
-                  className="btn-close"
-                  aria-label="close"
-                  onClick={handleClose}
-                >
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="form-label">Title</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
-                </div>
-                <div className="form-floating">
-                  <textarea
-                    className="form-control"
-                    id="floatigTextarea"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  ></textarea>
-                  <label htmlFor="floatigTextarea">Dscription</label>
-                </div>
-                <div className="my-3">
-                  <select className="form-select" onChange={handleSelectChange}>
-                    <option selected>Select Status</option>
-                    <option value={true}>Completed</option>
-                    <option value={false}>Incomplete</option>
-                  </select>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleClose}
-                >
-                  close
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleSubmit}
-                >
-                  UPDATE
-                </button>
-              </div>
+        <div className="custom-modal">
+          <div className="custom-modal-box">
+            <h3>Update Task</h3>
+
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Title"
+            />
+
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Description"
+            />
+
+            <select
+              value={isCompleted}
+              onChange={(e) => setIsCompleted(e.target.value === "true")}
+            >
+              <option value="false">Incomplete</option>
+              <option value="true">Completed</option>
+            </select>
+
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+
+            <div className="modal-actions">
+              <button className="btn btn-primary" onClick={handleSubmit}>
+                Update
+              </button>
+
+              <button className="btn" onClick={handleClose}>
+                Cancel
+              </button>
             </div>
           </div>
         </div>

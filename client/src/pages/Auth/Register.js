@@ -4,69 +4,76 @@ import "./AuthStyles.css";
 import AuthServices from "../../Services/AuthServices";
 import { toast } from "react-hot-toast";
 import { getErrorMessage } from "../../Utils/ErrorMessage";
+
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
 
   const navigate = useNavigate();
-  //register function
+
   const registerHandler = async (e) => {
+    e.preventDefault();
+
+    if (!email || !password || !username) {
+      return toast.error("Please fill all fields");
+    }
+
     try {
-      e.preventDefault();
-      const data = { email, password, username };
-      const res = await AuthServices.registerUser(data);
-      toast.success(res.data.message);
+      const res = await AuthServices.registerUser({
+        email,
+        password,
+        username,
+      });
+
+      toast.success(res.data.message || "Registered successfully");
       navigate("/login");
-      console.log(res.data);
     } catch (err) {
       toast.error(getErrorMessage(err));
-      console.log(err);
     }
   };
+
   return (
     <div className="form-container">
-      <div className="form">
-        <div className="mb-3">
-          <i className="fa-solid fa-circle-user"></i>
-        </div>
-        <div className="mb-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="enter username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <input
-            type="email"
-            className="form-control"
-            placeholder="enter email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <input
-            type="password"
-            className="form-control"
-            placeholder="enter password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+      <form className="form" onSubmit={registerHandler}>
+        <i className="fa-solid fa-circle-user"></i>
+
+        <h2 style={{ marginBottom: "15px" }}>Register</h2>
+
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Enter username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+
+        <input
+          type="email"
+          className="form-control"
+          placeholder="Enter email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          className="form-control"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
         <div className="form-bottom">
-          <p className="text-center">
-            already user? please
-            <Link to="/login"> Login</Link>
+          <p>
+            Already a user? <Link to="/login">Login</Link>
           </p>
-          <button type="submit" className="login-btn" onClick={registerHandler}>
-            REGISTER
+
+          <button type="submit" className="login-btn">
+            Register
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

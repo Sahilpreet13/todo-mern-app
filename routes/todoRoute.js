@@ -5,20 +5,21 @@ const {
   deleteTodoController,
   updateTodoController,
 } = require("../controllers/todoController");
+
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-//create todo
+// CREATE TODO
 router.post("/create", authMiddleware, createTodoController);
 
-//GET TODO
-router.post("/getAll/:userId", authMiddleware, getTodoController);
+// GET ALL TODOS (use GET instead of POST)
+router.get("/getAll/:userId", authMiddleware, getTodoController);
 
-//DELEET TODO
+// DELETE TODO
 router.delete("/delete/:id", authMiddleware, deleteTodoController);
 
-//UPDATE TODO
-router.patch("/update/:id", authMiddleware, updateTodoController);
+// UPDATE TODO
+router.put("/update/:id", authMiddleware, updateTodoController);
 
 module.exports = router;

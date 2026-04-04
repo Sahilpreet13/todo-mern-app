@@ -1,92 +1,121 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Layout/Navbar";
+import Card from "../../components/Card/Card";
 import TodoServices from "../../Services/TodoServices";
-import Spinner from "../../components/Spinner";
+import { useNavigate } from "react-router-dom";
 
 const TodoList = () => {
-  const [todoStatus, setTodosStatus] = useState("");
-  const [filterdTask, setFilterdTask] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [allTask, setAllTask] = useState([]);
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState(""); // 🔥 NEW
 
-  //get User todos
-  const userData = JSON.parse(localStorage.getItem("todoapp"));
-  const id = userData && userData?.user.id;
-  console.log(id);
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("todoapp"));
+  const id = user?.user?.id;
+
+  // 🔐 protect route
+  useEffect(() => {
+    if (!user?.token) {
+      navigate("/login");
+    }
+  }, []);
+
+  // fetch tasks
   const getUserTask = async () => {
-    setLoading(true);
     try {
       const { data } = await TodoServices.getAllTodo(id);
-      setLoading(false);
-      // console.log(data);
       setAllTask(data?.todos);
     } catch (error) {
-      setLoading(false);
       console.log(error);
     }
   };
 
   useEffect(() => {
-    const incomplete = allTask?.filter((item) => item?.isCompleted === false);
-    const completed = allTask?.filter((item) => item?.isCompleted === true);
-    if (todoStatus === "incomplete") {
-      setFilterdTask(incomplete);
-    } else if (todoStatus === "completed") {
-      setFilterdTask(completed);
-    }
     getUserTask();
-  }, [todoStatus]);
+  }, []);
+
+  // 📊 stats
+  const total = allTask.length;
+  const completed = allTask.filter((t) => t.isCompleted).length;
+  const pending = allTask.filter((t) => !t.isCompleted).length;
+
+  // 🔥 COMBINED FILTER + SEARCH
+  const filteredTasks = allTask
+    .filter((task) => {
+      if (filter === "completed") return task.isCompleted;
+      if (filter === "pending") return !task.isCompleted;
+      return true;
+    })
+    .filter(
+      (task) =>
+        task.title.toLowerCase().includes(search.toLowerCase()) ||
+        task.description.toLowerCase().includes(search.toLowerCase()),
+    );
 
   return (
     <>
-      <Navbar />
-      <div className="filter-container">
-        <h4>Filter Todos by </h4>
-        <div className="filter-group">
-          <select
-            className="form-select"
-            onChange={(e) => setTodosStatus(e.target.value)}
-          >
-            <option selected>Select Status</option>
-            <option value="incomplete">Incomplete</option>
-            <option value="completed">completed</option>
-          </select>
+      <div className="container">
+        <h1>My Todos Dashboard</h1>
+
+        {/* 📊 STATS */}
+        <div className="stats-container">
+          <div className="stat-card">
+            <h3>{total}</h3>
+            <p>Total Tasks</p>
+          </div>
+
+          <div className="stat-card green">
+            <h3>{completed}</h3>
+            <p>Completed</p>
+          </div>
+
+          <div className="stat-card red">
+            <h3>{pending}</h3>
+            <p>Pending</p>
+          </div>
         </div>
-      </div>
-      {/* ================= */}
-      {loading && <Spinner />}
-      <div className="card-container">
-        {filterdTask?.length === 0 ? (
-          <h1 className="no-task"> No task Found</h1>
-        ) : (
-          filterdTask?.map((task, i) => (
-            <>
-              <div
-                className="card border-primary mb-3 mt-3"
-                style={{ maxWidth: "18rem" }}
-                key={i}
-              >
-                <div className="card-header">
-                  <div className="chead">
-                    <h6>{task?.title.substring(0, 10)}</h6>
-                    <h6
-                      className={
-                        task?.isCompleted === true ? "task-cmp " : "task-inc"
-                      }
-                    >
-                      {task?.isCompleted === true ? "Completed " : "incomlete"}
-                    </h6>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <h6 style={{ fontWeight: "bold" }}>{task?.title}</h6>
-                  <p className="card-text">{task?.description}</p>
-                  <h6>Date : {task?.createdAt.substring(0, 10)}</h6>
-                </div>
-              </div>
-            </>
-          ))
-        )}
+
+        {/* 🔍 SEARCH BAR */}
+        <input
+          type="text"
+          placeholder="Search your task..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            padding: "10px",
+            width: "300px",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+            marginBottom: "15px",
+          }}
+        />
+
+        {/* 🔘 FILTER BUTTONS */}
+        <div className="filter-buttons">
+          <button
+            onClick={() => setFilter("all")}
+            className={`btn ${filter === "all" ? "active-filter" : ""}`}
+          >
+            All
+          </button>
+
+          <button
+            onClick={() => setFilter("completed")}
+            className={`btn ${filter === "completed" ? "active-filter" : ""}`}
+          >
+            Completed
+          </button>
+
+          <button
+            onClick={() => setFilter("pending")}
+            className={`btn ${filter === "pending" ? "active-filter" : ""}`}
+          >
+            Pending
+          </button>
+        </div>
+
+        {/* 🧩 TASK LIST */}
+        <Card allTask={filteredTasks} getUserTask={getUserTask} />
       </div>
     </>
   );

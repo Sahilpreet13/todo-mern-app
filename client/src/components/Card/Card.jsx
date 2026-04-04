@@ -4,81 +4,117 @@ import toast from "react-hot-toast";
 import TodoServices from "../../Services/TodoServices";
 
 const Card = ({ allTask, getUserTask }) => {
-  const [showModal, setShowModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
-  //handle edit
-  const handleEdit = () => {
-    setShowModal(true);
-  };
-
-  //hanlde delete
+  // 🗑 DELETE
   const handleDelete = async (id) => {
     try {
       await TodoServices.deleteTodo(id);
-      toast.success("task Deleted Succesfully");
+      toast.success("Task Deleted");
       getUserTask();
     } catch (error) {
-      console.log(error);
-      toast.error(error);
+      toast.error("Error deleting task");
+    }
+  };
+
+  // ✅ TOGGLE COMPLETE
+  const handleToggle = async (task) => {
+    try {
+      const updatedData = {
+        ...task,
+        isCompleted: !task.isCompleted,
+      };
+
+      await TodoServices.updateTodo(task._id, updatedData);
+
+      toast.success(`Marked as ${!task.isCompleted ? "Completed" : "Pending"}`);
+
+      getUserTask(); // refresh
+    } catch (error) {
+      toast.error("Error updating task");
     }
   };
 
   return (
     <>
       <div className="card-container">
-        {allTask?.map((task, i) => (
-          <>
-            <div
-              className="card border-primary mb-3 mt-3"
-              style={{ maxWidth: "18rem" }}
-              key={i}
+        {allTask?.map((task) => (
+          <div className="card" key={task._id}>
+            <h3>{task.title}</h3>
+            <p>{task.description}</p>
+
+            {/* 📅 DATE */}
+            <p className="due-date">
+              📅{" "}
+              {task.dueDate
+                ? new Date(task.dueDate).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  })
+                : "No Date"}
+            </p>
+
+            {/* 🔥 PRIORITY */}
+            <span
+              className={`priority-badge ${
+                task.priority === "high"
+                  ? "high"
+                  : task.priority === "medium"
+                    ? "medium"
+                    : "low"
+              }`}
             >
-              <div className="card-header">
-                <div className="chead">
-                  <h6>{task?.title.substring(0, 10)}</h6>
-                  <h6
-                    className={
-                      task?.isCompleted === true ? "task-cmp " : "task-inc"
-                    }
-                  >
-                    {task?.isCompleted === true ? "Completed " : "incomlete"}
-                  </h6>
-                </div>
-              </div>
-              <div className="card-body">
-                <h6 style={{ fontWeight: "bold" }}>{task?.title}</h6>
-                <p className="card-text">{task?.description}</p>
-                <h6>Date : {task?.createdAt.substring(0, 10)}</h6>
-              </div>
-              <div className="card-footer bg-transparent border-primary">
-                <button
-                  className="btn btn-warning"
-                  title="EDIT Task"
-                  onClick={handleEdit}
-                >
-                  <i className="fa-solid fa-pen-to-square"></i>
-                </button>
-                <button
-                  className="btn btn-danger ms-2"
-                  title="Delete Task"
-                  onClick={() => handleDelete(task?._id)}
-                >
-                  <i className="fa-solid fa-trash"></i>
-                </button>
-              </div>
+              {task.priority?.toUpperCase()}
+            </span>
+
+            {/* ✅ STATUS */}
+            <span
+              className={`status-badge ${
+                task.isCompleted ? "completed-badge" : "pending-badge"
+              }`}
+            >
+              {task.isCompleted ? "Completed" : "Pending"}
+            </span>
+
+            {/* 🔘 TOGGLE SWITCH */}
+            <label className="toggle-container">
+              <input
+                type="checkbox"
+                checked={task.isCompleted}
+                onChange={() => handleToggle(task)}
+              />
+              <span>Mark as {task.isCompleted ? "Pending" : "Completed"}</span>
+            </label>
+
+            {/* BUTTONS */}
+            <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => setSelectedTask(task)}
+              >
+                Edit
+              </button>
+
+              <button
+                className="btn btn-danger"
+                onClick={() => handleDelete(task._id)}
+              >
+                Delete
+              </button>
             </div>
-            <div>
-              {showModal && (
-                <EditTodo
-                  task={task}
-                  setShowModal={setShowModal}
-                  getUserTask={getUserTask}
-                />
-              )}
-            </div>
-          </>
+          </div>
         ))}
       </div>
+
+      {/* EDIT MODAL */}
+      {selectedTask && (
+        <EditTodo
+          task={selectedTask}
+          setShowModal={() => setSelectedTask(null)}
+          getUserTask={getUserTask}
+        />
+      )}
     </>
   );
 };

@@ -10,56 +10,63 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
-  //login function
+
   const loginHandler = async (e) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      return toast.error("Please fill all fields");
+    }
+
     try {
-      e.preventDefault();
-      const data = { email, password };
-      const res = await AuthServices.loginUSer(data);
-      toast.success(res.data.message);
-      navigate("/home");
+      const res = await AuthServices.loginUSer({ email, password });
+
+      if (!res?.data?.token) {
+        return toast.error("Invalid login response");
+      }
+
       localStorage.setItem("todoapp", JSON.stringify(res.data));
-      console.log(res.data);
+
+      toast.success(res.data.message || "Login successful");
+      navigate("/home");
     } catch (err) {
       toast.error(getErrorMessage(err));
-      console.log(err);
     }
   };
 
   return (
     <div className="form-container">
-      <div className="form">
-        <div className="mb-3">
-          <i className="fa-solid fa-circle-user"></i>
-        </div>
-        <div className="mb-3">
-          <input
-            type="email"
-            className="form-control"
-            placeholder="enter email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <input
-            type="password"
-            className="form-control"
-            placeholder="enter password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+      <form className="form" onSubmit={loginHandler}>
+        <i className="fa-solid fa-circle-user"></i>
+
+        <h2 style={{ marginBottom: "15px" }}>Login</h2>
+
+        <input
+          type="email"
+          className="form-control"
+          placeholder="Enter email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          className="form-control"
+          placeholder="Enter password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
         <div className="form-bottom">
-          <p className="text-center">
-            not a user? please
-            <Link to="/register"> Regiser</Link>
+          <p>
+            Not a user? <Link to="/register">Register</Link>
           </p>
-          <button type="submit" className="login-btn" onClick={loginHandler}>
-            LOGIN
+
+          <button type="submit" className="login-btn">
+            Login
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

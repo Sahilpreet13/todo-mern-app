@@ -4,15 +4,12 @@ const {
   loginControler,
 } = require("../controllers/userController");
 
-//router object
 const router = express.Router();
 
-//routes
-// REGIOSTER || POST
+// REGISTER
 router.post("/register", registerController);
 
-//LOGIN || POST
+// LOGIN
 router.post("/login", loginControler);
 
-//export
 module.exports = router;

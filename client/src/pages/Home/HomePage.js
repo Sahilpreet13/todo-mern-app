@@ -1,50 +1,23 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Layout/Navbar";
-import PopModal from "../../components/PopModal";
-import TodoServices from "../../Services/TodoServices";
 import Card from "../../components/Card/Card";
-import Spinner from "../../components/Spinner";
+import TodoServices from "../../Services/TodoServices";
+import CreateTodo from "../../components/CreateTodo";
 
 const HomePage = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [allTask, setAllTask] = useState([]);
-  //handle modal
-  const openModalHandler = () => {
-    setShowModal(true);
-  };
+  const [search, setSearch] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
 
-  //search
-  const handleSearch = (e) => {
-    const query = e.target.value;
-    let filterList = allTask?.filter((item) =>
-      item.title.toLowerCase().match(query.toLowerCase())
-    );
-    console.log("Filterd list===>", filterList);
-    setSearchQuery(query);
-    if (query && filterList.length > 0) {
-      setAllTask(filterList && filterList);
-    } else {
-      getUserTask();
-    }
-  };
-
-  //get User todos
   const userData = JSON.parse(localStorage.getItem("todoapp"));
-  const id = userData && userData?.user.id;
-  console.log(id);
+  const id = userData?.user?.id;
+
+  // 🔄 Fetch tasks
   const getUserTask = async () => {
-    setLoading(true);
     try {
       const { data } = await TodoServices.getAllTodo(id);
-      setLoading(false);
-      // console.log(data);
       setAllTask(data?.todos);
     } catch (error) {
-      setLoading(false);
       console.log(error);
     }
   };
@@ -52,38 +25,57 @@ const HomePage = () => {
   useEffect(() => {
     getUserTask();
   }, []);
+
+  // 🔍 SEARCH FILTER (title + description)
+  const filteredTasks = allTask.filter(
+    (task) =>
+      task.title.toLowerCase().includes(search.toLowerCase()) ||
+      task.description.toLowerCase().includes(search.toLowerCase()),
+  );
+
   return (
     <>
-      <Navbar />
       <div className="container">
-        <div className="add-task">
-          <h1>Your Task</h1>
+        <h1>Your Tasks</h1>
+
+        {/* 🔍 SEARCH + CREATE */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "20px",
+            width: "100%",
+          }}
+        >
           <input
-            type="search"
-            placeholder="search your task"
-            value={searchQuery}
-            onChange={handleSearch}
+            type="text"
+            placeholder="Search your task..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: "300px",
+              padding: "10px",
+              borderRadius: "8px",
+              border: "1px solid #ccc",
+            }}
           />
-          <button className=" btn btn-primary" onClick={openModalHandler}>
-            Create Task <i className="fa-solid fa-plus"></i>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => setShowCreate(true)}
+          >
+            + Create Task
           </button>
         </div>
 
-        {loading ? (
-          <Spinner />
-        ) : (
-          allTask && <Card allTask={allTask} getUserTask={getUserTask} />
+        {/* 🧩 TASK LIST */}
+        <Card allTask={filteredTasks} getUserTask={getUserTask} />
+
+        {/* ➕ CREATE MODAL */}
+        {showCreate && (
+          <CreateTodo setShowModal={setShowCreate} getUserTask={getUserTask} />
         )}
-        {/* ========== modal =========== */}
-        <PopModal
-          getUserTask={getUserTask}
-          showModal={showModal}
-          setShowModal={setShowModal}
-          title={title}
-          setTitle={setTitle}
-          description={description}
-          setDescription={setDescription}
-        />
       </div>
     </>
   );

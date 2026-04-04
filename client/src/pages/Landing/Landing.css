@@ -1,53 +1,64 @@
-.hero {
+/* WRAPPER */
+.landing-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.9rem;
-  max-width: 1100px;
-  margin: 0rem auto -6rem;
-  height: 100vh;
+  padding: 60px;
+  gap: 40px;
 }
 
-.intro-text h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+/* TEXT SECTION */
+.landing-text {
+  flex: 1;
 }
 
-.intro-text p {
-  margin-bottom: 1.7rem;
+.landing-text h1 {
+  font-size: 42px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 15px;
 }
 
-.tagline1 {
-  color: #1a2e35;
+.landing-text span {
+  color: #2563eb;
 }
 
-.tagline2 {
-  color: #ff775f;
+.landing-text p {
+  font-size: 18px;
+  color: #6b7280;
+  margin-bottom: 30px;
 }
 
-.btn {
-  margin-top: 1rem;
-  display: inline-block;
-  padding: 0.8rem 1rem;
-  border: none;
-  font-size: 1rem;
-  border-radius: 4px;
-  color: #fff;
-  text-decoration: none;
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+/* BUTTONS */
+.landing-buttons {
+  display: flex;
+  gap: 15px;
 }
 
-.red {
-  background-color: #ff775f;
-  margin-right: 1.5rem;
+/* IMAGE */
+.landing-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
-.blue {
-  background-color: #1a67f6;
+.landing-image img {
+  width: 90%;
+  max-width: 500px;
 }
 
-.blue:hover {
-  background-color: #0059fd;
-  color: #fff;
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .landing-wrapper {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .landing-buttons {
+    justify-content: center;
+  }
+
+  .landing-image img {
+    width: 100%;
+  }
 }

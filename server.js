@@ -22,7 +22,7 @@ app.use(morgan("dev"));
 //routes
 app.use("/api/v1/user", require("./routes/userRoute"));
 app.use("/api/v1/todo", require("./routes/todoRoute"));
-app.use("/api/v1/test", require("./routes/testRouter"));
+app.use("/api/v1/test", require("./routes/testRoute"));
 
 //port
 const PORT = process.env.PORT || 8000;
@@ -31,6 +31,6 @@ const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(
     `Node Server Running on ${process.env.DEV_MODE} mode on Port no ${PORT}`
-      .bgMagenta
+      .bgMagenta,
   );
 });
