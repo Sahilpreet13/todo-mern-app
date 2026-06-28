@@ -29,7 +29,7 @@ const Card = ({ allTask, getUserTask }) => {
 
       toast.success(`Marked as ${!task.isCompleted ? "Completed" : "Pending"}`);
 
-      getUserTask(); // refresh
+      getUserTask();
     } catch (error) {
       toast.error("Error updating task");
     }
@@ -38,76 +38,98 @@ const Card = ({ allTask, getUserTask }) => {
   return (
     <>
       <div className="card-container">
-        {allTask?.map((task) => (
-          <div className="card" key={task._id}>
-            <h3>{task.title}</h3>
-            <p>{task.description}</p>
+        {allTask?.map((task) => {
+          // 🚨 OVERDUE LOGIC
+          const isOverdue =
+            task.dueDate &&
+            new Date(task.dueDate) < new Date() &&
+            !task.isCompleted;
 
-            {/* 📅 DATE */}
-            <p className="due-date">
-              📅{" "}
-              {task.dueDate
-                ? new Date(task.dueDate).toLocaleDateString("en-GB", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                  })
-                : "No Date"}
-            </p>
-
-            {/* 🔥 PRIORITY */}
-            <span
-              className={`priority-badge ${
-                task.priority === "high"
-                  ? "high"
-                  : task.priority === "medium"
-                    ? "medium"
-                    : "low"
-              }`}
+          return (
+            <div
+              className={`card ${isOverdue ? "overdue" : ""}`}
+              key={task._id}
             >
-              {task.priority?.toUpperCase()}
-            </span>
+              <h3>{task.title}</h3>
+              <p>{task.description}</p>
 
-            {/* ✅ STATUS */}
-            <span
-              className={`status-badge ${
-                task.isCompleted ? "completed-badge" : "pending-badge"
-              }`}
-            >
-              {task.isCompleted ? "Completed" : "Pending"}
-            </span>
+              {/* 📅 DATE */}
+              <p className="due-date">
+                📅{" "}
+                {task.dueDate
+                  ? new Date(task.dueDate).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "No Date"}
+              </p>
 
-            {/* 🔘 TOGGLE SWITCH */}
-            <label className="toggle-container">
-              <input
-                type="checkbox"
-                checked={task.isCompleted}
-                onChange={() => handleToggle(task)}
-              />
-              <span>Mark as {task.isCompleted ? "Pending" : "Completed"}</span>
-            </label>
-
-            {/* BUTTONS */}
-            <div style={{ marginTop: "10px", display: "flex", gap: "10px" }}>
-              <button
-                className="btn btn-primary"
-                onClick={() => setSelectedTask(task)}
+              {/* 🔥 PRIORITY */}
+              <span
+                className={`priority-badge ${
+                  task.priority === "high"
+                    ? "high"
+                    : task.priority === "medium"
+                      ? "medium"
+                      : "low"
+                }`}
               >
-                Edit
-              </button>
+                {task.priority?.toUpperCase()}
+              </span>
 
-              <button
-                className="btn btn-danger"
-                onClick={() => handleDelete(task._id)}
+              {/* ✅ STATUS */}
+              <span
+                className={`status-badge ${
+                  task.isCompleted ? "completed-badge" : "pending-badge"
+                }`}
               >
-                Delete
-              </button>
+                {task.isCompleted ? "Completed" : "Pending"}
+              </span>
+
+              {/* 🚨 OVERDUE BADGE */}
+              {isOverdue && <span className="overdue-badge">Overdue</span>}
+
+              {/* 🔘 TOGGLE */}
+              <label className="toggle-container">
+                <input
+                  type="checkbox"
+                  checked={task.isCompleted}
+                  onChange={() => handleToggle(task)}
+                />
+                <span>
+                  Mark as {task.isCompleted ? "Pending" : "Completed"}
+                </span>
+              </label>
+
+              {/* BUTTONS */}
+              <div
+                style={{
+                  marginTop: "10px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setSelectedTask(task)}
+                >
+                  Edit
+                </button>
+
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleDelete(task._id)}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* EDIT MODAL */}
+      {/* ✏️ EDIT MODAL */}
       {selectedTask && (
         <EditTodo
           task={selectedTask}
